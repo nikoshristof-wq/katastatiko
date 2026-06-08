@@ -51,9 +51,8 @@ async function getRoleMembers(guild, roleId) {
   const role = guild.roles.cache.get(roleId);
   if (!role) return "`Δεν βρέθηκε ο ρόλος.`";
 
-  await guild.members.fetch();
-
   const members = role.members.map(member => `<@${member.id}>`);
+
   return members.length ? members.join(", ") : "`Κανένα μέλος.`";
 }
 
@@ -87,7 +86,7 @@ async function buildPanelEmbed(guild) {
 
     embed.addFields({
       name: `${service.emoji} ${service.fullName}`,
-      value: `${staffText}`,
+      value: staffText,
       inline: false
     });
   }
@@ -127,7 +126,9 @@ client.on("messageCreate", async message => {
 
   const command = config.command || "!katastatika";
 
-  if (message.content !== command) return;
+  console.log("MESSAGE:", message.content);
+
+  if (message.content.trim().toLowerCase() !== command.toLowerCase()) return;
 
   try {
     await message.delete().catch(() => {});
