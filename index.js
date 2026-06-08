@@ -52,7 +52,6 @@ async function getRoleMembers(guild, roleId) {
   if (!role) return "`Δεν βρέθηκε ο ρόλος.`";
 
   const members = role.members.map(member => `<@${member.id}>`);
-
   return members.length ? members.join(", ") : "`Κανένα μέλος.`";
 }
 
@@ -85,7 +84,7 @@ async function buildPanelEmbed(guild) {
     const staffText = await buildServiceText(guild, service);
 
     embed.addFields({
-      name: `${service.emoji} ${service.fullName}`,
+      name: `${service.emoji || ""} ${service.fullName}`,
       value: staffText,
       inline: false
     });
@@ -102,8 +101,7 @@ function buildButtonRows() {
     const button = new ButtonBuilder()
       .setLabel(`${service.name} ΚΑΤΑΣΤΑΤΙΚΟ`)
       .setStyle(ButtonStyle.Link)
-      .setURL(service.url)
-      .setEmoji(service.emoji);
+      .setURL(service.url);
 
     currentRow.addComponents(button);
 
@@ -141,10 +139,10 @@ client.on("messageCreate", async message => {
       components: rows
     });
   } catch (error) {
-    console.error(error);
+    console.error("PANEL ERROR:", error);
 
     await message.channel.send({
-      content: "❌ Κάτι πήγε λάθος. Έλεγξε role IDs, permissions και intents."
+      content: "❌ Κάτι πήγε λάθος. Δες τα Render logs για PANEL ERROR."
     });
   }
 });
