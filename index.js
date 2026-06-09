@@ -60,38 +60,37 @@ async function getRoleMentions(guild, roleId) {
   return members.length ? members.join(" ") : "—";
 }
 
-/* ---------------- UI BUILDER (MDT SCREEN) ---------------- */
+/* ---------------- EMBED (SAFE MDT UI) ---------------- */
 
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("👮 HARMLOK POLICE")
+    .setTitle("👮 HARMLORK POLICE ")
     .setDescription(
-````ansi
-[1;36mSYSTEM STATUS: ONLINE[0m
-[1;37mDEPARTMENTS LOADED: ${services.length}[0m
-)
-.setThumbnail(config.logoUrl)
-.setTimestamp();
+`ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ
+-: ${services.length}`
+    )
+    .setThumbnail(config.logoUrl)
+    .setTimestamp();
 
-for (const service of services) {
-let block = "";
+  for (const service of services) {
+    let block = "";
 
-for (const r of service.roles || []) {
-  const members = await getRoleMentions(guild, r.roleId);
-  block += `• ${r.title}: ${members}\n`;
-}
+    for (const r of service.roles || []) {
+      const members = await getRoleMentions(guild, r.roleId);
+      block += `• ${r.title}: ${members}\n`;
+    }
 
-embed.addFields({
-  name: `◆ ${service.fullName}`,
-  value:
-ACCESS NODE: ${service.emoji}
-```
-📄 ${service.url && service.url !== "-" ? `[ΠΑΤΑ ΕΔΩ](${service.url})` : "NO FILE"}
+    embed.addFields({
+      name: `${service.emoji} ${service.fullName}`,
+      value:
+`────────────────────
+📄 ${service.url && service.url !== "-" ? `[ΠΑΤΑ ΕΔΩR](${service.url})` : "NO FILE"}
 
-${block || "NO PERSONNEL ASSIGNED"}
+${block || "NO PERSONNEL"}
 
-────────────────────────`,
+STATUS: ACTIVE
+────────────────────`,
       inline: false
     });
   }
