@@ -33,7 +33,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers // 🔥 REQUIRED
+    GatewayIntentBits.GuildMembers
   ]
 });
 
@@ -49,7 +49,7 @@ function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
-/* ---------------- FIXED ROLE SYSTEM ---------------- */
+/* ---------------- ROLE FETCH (SAFE + CLEAN UI) ---------------- */
 
 async function getRoleMentions(guild, roleId) {
   if (!roleId || roleId === "-") return "—";
@@ -57,15 +57,18 @@ async function getRoleMentions(guild, roleId) {
   const role = await guild.roles.fetch(roleId).catch(() => null);
   if (!role) return "—";
 
-  // 🔥 FULL FETCH (this fixes missing users)
+  // 🔥 ensure members are loaded
   await guild.members.fetch().catch(() => {});
 
-  const members = role.members.map(m => `<@${m.id}>`);
+  const members = role.members.map(m => {
+    // ✔ CLEAN DISPLAY (NO BROKEN MENTIONS)
+    return `• ${m.user.tag}`;
+  });
 
-  return members.length ? members.join(" ") : "—";
+  return members.length ? members.join("\n") : "—";
 }
 
-/* ---------------- EMBED ---------------- */
+/* ---------------- EMBED UI ---------------- */
 
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
@@ -83,8 +86,8 @@ async function buildPanelEmbed(guild) {
     let block = "";
 
     for (const r of service.roles || []) {
-      const mentions = await getRoleMentions(guild, r.roleId);
-      block += `👤 **${r.title}** ➜ ${mentions}\n`;
+      const members = await getRoleMentions(guild, r.roleId);
+      block += `👤 **${r.title}**\n${members}\n\n`;
     }
 
     embed.addFields({
@@ -94,7 +97,7 @@ async function buildPanelEmbed(guild) {
 📄 Καταστατικό: ${
         service.url && service.url !== "-"
           ? `[ΠΑΤΑ ΕΔΩ](${service.url})`
-          : "ΔΕΝ ΥΠΑΡΧΕΙ"
+          : "ΜΗ ΔΙΑΘΕΣΙΜΟ"
       }
 
 ${block || "ΚΑΝΕΝΑ ΠΡΟΣΩΠΙΚΟ"}
