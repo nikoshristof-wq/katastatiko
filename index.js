@@ -2,9 +2,7 @@ const express = require("express");
 const {
   Client,
   GatewayIntentBits,
-  EmbedBuilder,
-  ActionRowBuilder,
-  StringSelectMenuBuilder
+  EmbedBuilder
 } = require("discord.js");
 
 const config = require("./config.json");
@@ -14,7 +12,7 @@ const app = express();
 
 /* ---------------- WEB ---------------- */
 app.get("/", (req, res) => {
-  res.send("🚓 Harmlork Police Database Online");
+  res.send("🚓 Harmlork Police System Online");
 });
 
 app.listen(process.env.PORT || 3000, () => {
@@ -26,7 +24,7 @@ app.listen(process.env.PORT || 3000, () => {
 const TOKEN = process.env.TOKEN;
 
 if (!TOKEN) {
-  console.error("❌ Missing TOKEN in environment variables");
+  console.error("❌ Missing TOKEN");
   process.exit(1);
 }
 
@@ -42,7 +40,7 @@ const client = new Client({
 /* ---------------- SAFETY ---------------- */
 
 process.on("unhandledRejection", err => {
-  console.log("Unhandled Error:", err);
+  console.log("ERROR:", err);
 });
 
 /* ---------------- HELPERS ---------------- */
@@ -51,18 +49,19 @@ function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
-/* SAFE ROLE FETCH (NO RATE LIMIT CRASH) */
+/* 🔥 FIXED ROLE MEMBERS (WORKS 100%) */
 async function getRoleMembers(guild, roleId) {
-  if (!roleId || roleId === "-") return "`➖`";
+  if (!roleId || roleId === "-") return "➖";
 
   const role = await guild.roles.fetch(roleId).catch(() => null);
-  if (!role) return "`Not found`";
+  if (!role) return "Role not found";
 
-  const members = [...role.members.values()]
-    .slice(0, 10)
-    .map(m => `👤 <@${m.id}>`);
+  // force cache members (IMPORTANT FIX)
+  await guild.members.fetch().catch(() => {});
 
-  return members.length ? members.join("\n") : "`➖`";
+  const members = role.members.map(m => `@${m.user.username}`);
+
+  return members.length ? members.join(" · ") : "➖";
 }
 
 /* ---------------- EMBED ---------------- */
@@ -76,67 +75,33 @@ async function buildPanelEmbed(guild) {
              ΚΑΤΑΣΤΑΤΙΚΑ ΥΠΗΡΕΣΙΩΝ
 ╚════════════════════════════════════════════╝
 
-📋 Επιλέξτε υπηρεσία από το menu παρακάτω.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+📋 Επιλέξτε υπηρεσία με το !katastatika`
     )
     .setThumbnail(config.logoUrl)
     .setTimestamp();
 
-  const formatLine = async (title, roleId) => {
-    const members = await getRoleMembers(guild, roleId);
-    return `👤 ${title.padEnd(18, " ")} ${members}`;
-  };
-
   for (const service of services) {
-    const lines = [];
+    let text = "";
 
     for (const r of service.roles || []) {
-      lines.push(await formatLine(r.title, r.roleId));
+      const members = await getRoleMembers(guild, r.roleId);
+
+      text += `👤 **${r.title}** ➜ ${members}\n`;
     }
 
     embed.addFields({
       name: `${service.emoji} ${service.fullName}`,
       value:
-`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${lines.join("\n")}
+`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔗 Καταστατικό: ${service.url && service.url !== "-" ? `[Άνοιγμα](${service.url})` : "➖"}
 
-🔗 Καταστατικό:
-${service.url && service.url !== "-" 
-  ? `[📄 Άνοιγμα](${service.url})`
-  : "`➖ Δεν υπάρχει link`"}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+${text || "➖ Δεν υπάρχουν δεδομένα"}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
       inline: false
     });
   }
 
-  embed.addFields({
-    name: "⚡ QUICK MENU",
-    value:
-`⚡ Ο.Δ    🚦 Ο.Τ.ΕΛ    🏍️ Ο.ΔΙ.Δ
-🚔 Ο.Δ.ΑΣ  🏛️ ΑΚΑΔΗΜΙΑ  🏙️ Δ.Α  🚁 Ο.Ε.Μ`,
-    inline: false
-  });
-
   return embed;
-}
-
-/* ---------------- MENU ---------------- */
-
-function buildMenu() {
-  return new ActionRowBuilder().addComponents(
-    new StringSelectMenuBuilder()
-      .setCustomId("service_select")
-      .setPlaceholder("🚓 Select Department")
-      .addOptions(
-        services.map((s, i) => ({
-          label: s.fullName,
-          value: String(i),
-          emoji: s.emoji,
-          description: (s.description || "").slice(0, 80)
-        }))
-      )
-  );
 }
 
 /* ---------------- READY ---------------- */
@@ -155,41 +120,7 @@ client.on("messageCreate", async message => {
 
   const embed = await buildPanelEmbed(message.guild);
 
-  await message.channel.send({
-    embeds: [embed],
-    components: [buildMenu()]
-  });
-});
-
-/* ---------------- INTERACTION ---------------- */
-
-client.on("interactionCreate", async interaction => {
-  if (!interaction.isStringSelectMenu()) return;
-  if (interaction.customId !== "service_select") return;
-
-  const service = services[interaction.values[0]];
-  if (!service) return;
-
-  const text = await buildPanelEmbed(interaction.guild);
-
-  const embed = new EmbedBuilder()
-    .setColor(hexToNumber(config.embedColor))
-    .setTitle(`${service.emoji} ${service.fullName}`)
-    .setDescription(
-      "📋 **Department Selected**\n━━━━━━━━━━━━━━━━━━━━━━"
-    )
-    .addFields({
-      name: "🔗 Καταστατικό",
-      value: service.url && service.url !== "-"
-        ? `[Άνοιγμα Καταστατικού](${service.url})`
-        : "`Δεν υπάρχει link`"
-    })
-    .setTimestamp();
-
-  await interaction.reply({
-    embeds: [embed],
-    ephemeral: true
-  });
+  await message.channel.send({ embeds: [embed] });
 });
 
 /* ---------------- LOGIN ---------------- */
