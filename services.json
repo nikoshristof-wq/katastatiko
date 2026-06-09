@@ -23,15 +23,14 @@
       { "title": "Υπεύθυνος Ο.Τ.ΕΛ", "roleId": "1370028187119124580" },
       { "title": "Βοηθός Ο.Τ.ΕΛ", "roleId": "-" }
     ]
-  }
-]
+  },
   {
     "id": "odid",
     "emoji": "🏍️",
     "name": "Ο.ΔΙ.Δ",
     "fullName": "Ομάδα Δίκυκλης Δράσης",
-    "url": "https://docs.google.com/document/d/1BSlMtSkBKi01zUxopW_dR3nmhHHNW2vKxU5UKnM_7vA/edit?tab=t.0",
-    "description": "Καταστατικό και επιχειρησιακοί κανόνες της Ομάδας Δίκυκλης Δράσης.",
+    "url": "https://docs.google.com/document/d/1BSlMtSkBKi01zUxopW_dR3nmhHHNW2vKxU5UKnM_7vA/edit",
+    "description": "Καταστατικό και επιχειρησιακοί κανόνες.",
     "roles": [
       { "title": "Υπεύθυνος Ο.ΔΙ.Δ", "roleId": "1192496338911375411" },
       { "title": "Βοηθός Υπευθύνου Ο.ΔΙ.Δ", "roleId": "1216461966680260688" },
@@ -43,8 +42,8 @@
     "emoji": "🚔",
     "name": "Ο.Δ.ΑΣ",
     "fullName": "Ομάδα Δίτροχης Αστυνόμευσης",
-    "url": "https://docs.google.com/document/d/1vlJSgTlPYypNSG8kW0ExdrFw-yvPjR_NJILmUZWRhak/edit?tab=t.0",
-    "description": "Κανονισμοί, καθήκοντα και λειτουργία της Ομάδας Δίτροχης Αστυνόμευσης.",
+    "url": "https://docs.google.com/document/d/1vlJSgTlPYypNSG8kW0ExdrFw-yvPjR_NJILmUZWRhak/edit",
+    "description": "Κανονισμοί και λειτουργία.",
     "roles": [
       { "title": "Υπεύθυνος Ο.Δ.ΑΣ", "roleId": "1189271007261904956" },
       { "title": "Βοηθός Υπευθύνου Ο.Δ.ΑΣ", "roleId": "1189271116687081502" },
@@ -56,8 +55,8 @@
     "emoji": "🏛️",
     "name": "Ακαδημία",
     "fullName": "Ακαδημία HARMLORK",
-    "url": "https://docs.google.com/document/d/1ElX5BAZniUefRtM86owSKovcqrFsj8tSrvr8Nio5FiI/edit?tab=t.0#heading=h.8u3jhixqt65b",
-    "description": "Πρόγραμμα εκπαίδευσης, αξιολόγηση και εσωτερική λειτουργία της Ακαδημίας.",
+    "url": "https://docs.google.com/document/d/1ElX5BAZniUefRtM86owSKovcqrFsj8tSrvr8Nio5FiI/edit",
+    "description": "Εκπαίδευση και αξιολόγηση.",
     "roles": [
       { "title": "Υπεύθυνος Ακαδημίας", "roleId": "1252270509408780339" },
       { "title": "Εκπαιδευτές Ακαδημίας", "roleId": "-" }
@@ -68,8 +67,8 @@
     "emoji": "🏙️",
     "name": "Δ.Α",
     "fullName": "Δημοτική Αστυνομία",
-    "url": "https://docs.google.com/document/d/13BoCNRdZbyUEWA03VofM-HHmzFU2d3qLv4z6zxmBxDA/edit?tab=t.0",
-    "description": "Κανονισμοί και αρμοδιότητες της Δημοτικής Αστυνομίας.",
+    "url": "https://docs.google.com/document/d/13BoCNRdZbyUEWA03VofM-HHmzFU2d3qLv4z6zxmBxDA/edit",
+    "description": "Αρμοδιότητες και κανονισμοί.",
     "roles": [
       { "title": "Υπεύθυνος Δημοτικής Αστυνομίας", "roleId": "1496377772623265943" },
       { "title": "Βοηθός Υπευθύνου Δ.Α", "roleId": "1499813586686447666" }
@@ -80,8 +79,8 @@
     "emoji": "🚁",
     "name": "Ο.Ε.Μ",
     "fullName": "Ομάδα Εναέριων Μέσων",
-    "url": "https://docs.google.com/document/d/1GKdAasi_DAMtrpgYvO_-iPsNJ_svLDWUN0CIBWZFzRA/edit?tab=t.0#heading=h.9yj944ber1q8",
-    "description": "Κανονισμοί πτήσεων, επιχειρήσεων και χρήσης εναέριων μέσων.",
+    "url": "https://docs.google.com/document/d/1GKdAasi_DAMtrpgYvO_-iPsNJ_svLDWUN0CIBWZFzRA/edit",
+    "description": "Πτήσεις και επιχειρήσεις.",
     "roles": [
       { "title": "Εκπαιδευτές Ο.Ε.Μ", "roleId": "1300616669881827388" }
     ]
