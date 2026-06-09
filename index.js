@@ -14,7 +14,7 @@ const app = express();
 
 /* ---------------- WEB ---------------- */
 app.get("/", (req, res) => {
-  res.send("🚓 Police Database Online");
+  res.send("🚓 Harmlork Police Database Online");
 });
 
 app.listen(process.env.PORT || 3000, () => {
@@ -26,7 +26,7 @@ app.listen(process.env.PORT || 3000, () => {
 const TOKEN = process.env.TOKEN;
 
 if (!TOKEN) {
-  console.error("❌ Missing TOKEN in env");
+  console.error("❌ Missing TOKEN in environment variables");
   process.exit(1);
 }
 
@@ -39,10 +39,10 @@ const client = new Client({
   ]
 });
 
-/* ---------------- SAFETY (no crashes) ---------------- */
+/* ---------------- SAFETY ---------------- */
 
 process.on("unhandledRejection", err => {
-  console.log("Unhandled Rejection:", err);
+  console.log("Unhandled Error:", err);
 });
 
 /* ---------------- HELPERS ---------------- */
@@ -51,33 +51,18 @@ function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
-/* 🔥 SAFE ROLE FETCH (NO RATE LIMITS) */
+/* SAFE ROLE FETCH (NO RATE LIMIT CRASH) */
 async function getRoleMembers(guild, roleId) {
-  if (!roleId || roleId === "-") return "`No role assigned`";
+  if (!roleId || roleId === "-") return "`➖`";
 
   const role = await guild.roles.fetch(roleId).catch(() => null);
-  if (!role) return "`Role not found`";
+  if (!role) return "`Not found`";
 
-  // ❌ NO guild.members.fetch() → avoids crash
   const members = [...role.members.values()]
-    .slice(0, 15) // limit to avoid spam/rate limit
+    .slice(0, 10)
     .map(m => `👤 <@${m.id}>`);
 
-  return members.length ? members.join("\n") : "`No members`";
-}
-
-/* ---------------- BUILD TEXT ---------------- */
-
-async function buildServiceText(guild, service) {
-  const lines = [];
-
-  for (const group of service.roles || []) {
-    const members = await getRoleMembers(guild, group.roleId);
-
-    lines.push(`👮 **${group.title}**\n${members}`);
-  }
-
-  return lines.length ? lines.join("\n\n") : "`No data`";
+  return members.length ? members.join("\n") : "`➖`";
 }
 
 /* ---------------- EMBED ---------------- */
@@ -85,29 +70,53 @@ async function buildServiceText(guild, service) {
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("🚓 HARMLOK POLICE | COMMAND CENTER")
     .setDescription(
-      "```ansi\n" +
-      "POLICE DASHBOARD SYSTEM\n" +
-      "SELECT DEPARTMENT BELOW\n```"
+`╔════════════════════════════════════════════╗
+            👮 HARMLORK POLICE
+             ΚΑΤΑΣΤΑΤΙΚΑ ΥΠΗΡΕΣΙΩΝ
+╚════════════════════════════════════════════╝
+
+📋 Επιλέξτε υπηρεσία από το menu παρακάτω.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
     )
     .setThumbnail(config.logoUrl)
-    .setImage(config.bannerUrl || null)
-    .setFooter({
-      text: "Harmlork Police System",
-      iconURL: config.logoUrl
-    })
     .setTimestamp();
 
+  const formatLine = async (title, roleId) => {
+    const members = await getRoleMembers(guild, roleId);
+    return `👤 ${title.padEnd(18, " ")} ${members}`;
+  };
+
   for (const service of services) {
-    const text = await buildServiceText(guild, service);
+    const lines = [];
+
+    for (const r of service.roles || []) {
+      lines.push(await formatLine(r.title, r.roleId));
+    }
 
     embed.addFields({
       name: `${service.emoji} ${service.fullName}`,
-      value: text,
+      value:
+`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${lines.join("\n")}
+
+🔗 Καταστατικό:
+${service.url && service.url !== "-" 
+  ? `[📄 Άνοιγμα](${service.url})`
+  : "`➖ Δεν υπάρχει link`"}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
       inline: false
     });
   }
+
+  embed.addFields({
+    name: "⚡ QUICK MENU",
+    value:
+`⚡ Ο.Δ    🚦 Ο.Τ.ΕΛ    🏍️ Ο.ΔΙ.Δ
+🚔 Ο.Δ.ΑΣ  🏛️ ΑΚΑΔΗΜΙΑ  🏙️ Δ.Α  🚁 Ο.Ε.Μ`,
+    inline: false
+  });
 
   return embed;
 }
@@ -118,7 +127,7 @@ function buildMenu() {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId("service_select")
-      .setPlaceholder("Select Department")
+      .setPlaceholder("🚓 Select Department")
       .addOptions(
         services.map((s, i) => ({
           label: s.fullName,
@@ -142,9 +151,7 @@ client.on("messageCreate", async message => {
   if (message.author.bot) return;
   if (!message.guild) return;
 
-  const command = config.command || "!katastatika";
-
-  if (message.content.toLowerCase() !== command.toLowerCase()) return;
+  if (message.content.toLowerCase() !== "!katastatika") return;
 
   const embed = await buildPanelEmbed(message.guild);
 
@@ -154,7 +161,7 @@ client.on("messageCreate", async message => {
   });
 });
 
-/* ---------------- INTERACTIONS ---------------- */
+/* ---------------- INTERACTION ---------------- */
 
 client.on("interactionCreate", async interaction => {
   if (!interaction.isStringSelectMenu()) return;
@@ -163,15 +170,19 @@ client.on("interactionCreate", async interaction => {
   const service = services[interaction.values[0]];
   if (!service) return;
 
-  const text = await buildServiceText(interaction.guild, service);
+  const text = await buildPanelEmbed(interaction.guild);
 
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
     .setTitle(`${service.emoji} ${service.fullName}`)
-    .setDescription("📋 STAFF LIST")
+    .setDescription(
+      "📋 **Department Selected**\n━━━━━━━━━━━━━━━━━━━━━━"
+    )
     .addFields({
-      name: "👮 Members",
-      value: text
+      name: "🔗 Καταστατικό",
+      value: service.url && service.url !== "-"
+        ? `[Άνοιγμα Καταστατικού](${service.url})`
+        : "`Δεν υπάρχει link`"
     })
     .setTimestamp();
 
