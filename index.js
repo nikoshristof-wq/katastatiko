@@ -22,20 +22,27 @@ app.listen(process.env.PORT || 3000, () => {
 });
 
 /* ---------------- BOT ---------------- */
+
 const TOKEN = process.env.TOKEN;
 
 if (!TOKEN) {
-  console.error("❌ Missing TOKEN");
+  console.error("❌ Missing TOKEN in env");
   process.exit(1);
 }
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers, // 🔥 REQUIRED
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
   ]
+});
+
+/* ---------------- SAFETY (no crashes) ---------------- */
+
+process.on("unhandledRejection", err => {
+  console.log("Unhandled Rejection:", err);
 });
 
 /* ---------------- HELPERS ---------------- */
@@ -44,18 +51,22 @@ function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
+/* 🔥 SAFE ROLE FETCH (NO RATE LIMITS) */
 async function getRoleMembers(guild, roleId) {
-  if (!roleId || roleId === "-") return "`No role`";
-
-  await guild.members.fetch(); // 🔥 IMPORTANT FIX
+  if (!roleId || roleId === "-") return "`No role assigned`";
 
   const role = await guild.roles.fetch(roleId).catch(() => null);
   if (!role) return "`Role not found`";
 
-  const members = role.members.map(m => `👤 <@${m.id}>`);
+  // ❌ NO guild.members.fetch() → avoids crash
+  const members = [...role.members.values()]
+    .slice(0, 15) // limit to avoid spam/rate limit
+    .map(m => `👤 <@${m.id}>`);
 
   return members.length ? members.join("\n") : "`No members`";
 }
+
+/* ---------------- BUILD TEXT ---------------- */
 
 async function buildServiceText(guild, service) {
   const lines = [];
@@ -63,18 +74,10 @@ async function buildServiceText(guild, service) {
   for (const group of service.roles || []) {
     const members = await getRoleMembers(guild, group.roleId);
 
-    if (!members) continue;
-
-    lines.push(
-      `👮 **${group.title}**\n${members}`
-    );
+    lines.push(`👮 **${group.title}**\n${members}`);
   }
 
-  if (!lines.length) {
-    return "```diff\n- No staff assigned\n```";
-  }
-
-  return lines.join("\n\n");
+  return lines.length ? lines.join("\n\n") : "`No data`";
 }
 
 /* ---------------- EMBED ---------------- */
@@ -85,8 +88,8 @@ async function buildPanelEmbed(guild) {
     .setTitle("🚓 HARMLOK POLICE | COMMAND CENTER")
     .setDescription(
       "```ansi\n" +
-      "POLICE DATABASE DASHBOARD\n" +
-      "Select department below\n```"
+      "POLICE DASHBOARD SYSTEM\n" +
+      "SELECT DEPARTMENT BELOW\n```"
     )
     .setThumbnail(config.logoUrl)
     .setImage(config.bannerUrl || null)
@@ -139,7 +142,9 @@ client.on("messageCreate", async message => {
   if (message.author.bot) return;
   if (!message.guild) return;
 
-  if (message.content.toLowerCase() !== "!katastatika") return;
+  const command = config.command || "!katastatika";
+
+  if (message.content.toLowerCase() !== command.toLowerCase()) return;
 
   const embed = await buildPanelEmbed(message.guild);
 
@@ -149,7 +154,7 @@ client.on("messageCreate", async message => {
   });
 });
 
-/* ---------------- INTERACTION ---------------- */
+/* ---------------- INTERACTIONS ---------------- */
 
 client.on("interactionCreate", async interaction => {
   if (!interaction.isStringSelectMenu()) return;
@@ -178,5 +183,4 @@ client.on("interactionCreate", async interaction => {
 
 /* ---------------- LOGIN ---------------- */
 
-client.login(TOKEN);
 client.login(TOKEN);
