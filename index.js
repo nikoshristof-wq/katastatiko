@@ -12,7 +12,7 @@ const app = express();
 
 /* ---------------- WEB ---------------- */
 app.get("/", (req, res) => {
-  res.send("Harmlork Police");
+  res.send("Harmlork Police System Online");
 });
 
 app.listen(process.env.PORT || 3000, () => {
@@ -28,6 +28,7 @@ if (!TOKEN) {
   process.exit(1);
 }
 
+/* IMPORTANT INTENTS */
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -36,7 +37,7 @@ const client = new Client({
   ]
 });
 
-/* ---------------- ERROR HANDLING (IMPORTANT) ---------------- */
+/* ---------------- SAFETY ---------------- */
 
 process.on("unhandledRejection", console.error);
 client.on("error", console.error);
@@ -48,7 +49,7 @@ function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
-/* ---------------- SAFE ROLE DISPLAY (NO FETCH CRASH) ---------------- */
+/* ---------------- SAFE ROLE FETCH (NO CRASH) ---------------- */
 
 async function getRoleMentions(guild, roleId) {
   if (!roleId || roleId === "-") return "—";
@@ -60,15 +61,15 @@ async function getRoleMentions(guild, roleId) {
   return members.length ? members.join(" ") : "—";
 }
 
-/* ---------------- EMBED UI (MDT STYLE CLEAN) ---------------- */
+/* ---------------- MDT EMBED ---------------- */
 
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("")
+    .setTitle("👮 HARMLORK POLICE ")
     .setDescription(
 `ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ: ${services.length}
-MODE: MDT ACTIVE`
+MODE: ACTIVE`
     )
     .setThumbnail(config.logoUrl)
     .setTimestamp();
@@ -87,16 +88,16 @@ MODE: MDT ACTIVE`
 `────────────────────
 📄 ${service.url && service.url !== "-" ? `[ΠΑΤΑ ΕΔΩ](${service.url})` : "NO FILE"}
 
-${block || "NO PERSONNEL ASSIGNED"}
+${block || "ΚΑΝΕΝΑΣ"}
 
-STATUS: ACTIVE UNIT
+ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ
 ────────────────────`,
       inline: false
     });
   }
 
   embed.addFields({
-    name: "SYSTEM UNITS",
+    name: "ΚΛΙΜΑΚΙΑ",
     value:
 `⚡ Ο.Δ | 🚦 Ο.Τ.ΕΛ | 🏍️ Ο.ΔΙ.Δ
 🚔 Ο.Δ.ΑΣ | 🏛️ ΑΚΑΔΗΜΙΑ | 🏙️ Δ.Α | 🚁 Ο.Ε.Μ`,
@@ -118,7 +119,8 @@ client.on("messageCreate", async message => {
   if (message.author.bot) return;
   if (!message.guild) return;
 
-  if (message.content.toLowerCase() !== "!katastatika") return;
+  // FLEXIBLE COMMAND (FIXED)
+  if (!message.content.toLowerCase().startsWith("!katastatika")) return;
 
   try {
     const embed = await buildPanelEmbed(message.guild);
