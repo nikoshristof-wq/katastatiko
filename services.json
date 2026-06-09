@@ -1,1 +1,89 @@
-[ { "id": "od", "emoji": "⚡", "name": "Ο.Δ", "fullName": "Ομάδα Δράσης", "url": "https://example.com/od-katastatiko", "description": "Καταστατικό, λειτουργία και διαδικασίες της Ομάδας Δράσης.", "roles": [ { "title": "Υπεύθυνος Ο.Δ", "roleId": "1189271216079507586" }, { "title": "Βοηθός Υπευθύνου Ο.Δ", "roleId": "1189271324628103228" }, { "title": "Εκπαιδευτές Ο.Δ", "roleId": "-" } ] }, { "id": "otel", "emoji": "🚦", "name": "Ο.Τ.ΕΛ", "fullName": "Ομάδα Τροχονομικών Ελέγχων", "url": "https://docs.google.com/document/d/1Y2L6LAWlyj-syn5IvJNd4FToW5_c3C5zY9YfTaWcdV0/edit?tab=t.0", "description": "Κανονισμοί, έλεγχοι και διαδικασίες της Ομάδας Τροχονομικών Ελέγχων.", "roles": [ { "title": "Υπεύθυνος Ο.Τ.ΕΛ", "roleId": "1370028187119124580" }, { "title": "Βοηθός Υπευθύνου Ο.Τ.ΕΛ", "roleId": "-" }, { "title": "Εκπαιδευτές Ο.Τ.ΕΛ", "roleId": "-" } ] }, { "id": "odid", "emoji": "🏍️", "name": "Ο.ΔΙ.Δ", "fullName": "Ομάδα Δίκυκλης Δράσης", "url": "https://docs.google.com/document/d/1BSlMtSkBKi01zUxopW_dR3nmhHHNW2vKxU5UKnM_7vA/edit?tab=t.0", "description": "Καταστατικό και επιχειρησιακοί κανόνες της Ομάδας Δίκυκλης Δράσης.", "roles": [ { "title": "Υπεύθυνος Ο.ΔΙ.Δ", "roleId": "1192496338911375411" }, { "title": "Βοηθός Υπευθύνου Ο.ΔΙ.Δ", "roleId": "1216461966680260688" }, { "title": "Εκπαιδευτές Ο.ΔΙ.Δ", "roleId": "-" } ] }, { "id": "odas", "emoji": "🚔", "name": "Ο.Δ.ΑΣ", "fullName": "Ομάδα Δίτροχης Αστυνόμευσης", "url": "https://docs.google.com/document/d/1vlJSgTlPYypNSG8kW0ExdrFw-yvPjR_NJILmUZWRhak/edit?tab=t.0", "description": "Κανονισμοί, καθήκοντα και λειτουργία της Ομάδας Δίτροχης Αστυνόμευσης.", "roles": [ { "title": "Υπεύθυνος Ο.Δ.ΑΣ", "roleId": "1189271007261904956" }, { "title": "Βοηθός Υπευθύνου Ο.Δ.ΑΣ", "roleId": "1189271116687081502" }, { "title": "Εκπαιδευτές Ο.Δ.ΑΣ", "roleId": "-" } ] }, { "id": "academy", "emoji": "🏛️", "name": "Ακαδημία", "fullName": "Ακαδημία HARMLORK", "url": "https://docs.google.com/document/d/1ElX5BAZniUefRtM86owSKovcqrFsj8tSrvr8Nio5FiI/edit?tab=t.0#heading=h.8u3jhixqt65b", "description": "Πρόγραμμα εκπαίδευσης, αξιολόγηση και εσωτερική λειτουργία της Ακαδημίας.", "roles": [ { "title": "Υπεύθυνος Ακαδημίας", "roleId": "1252270509408780339" }, { "title": "Εκπαιδευτές Ακαδημίας", "roleId": "-" } ] }, { "id": "da", "emoji": "🏙️", "name": "Δ.Α", "fullName": "Δημοτική Αστυνομία", "url": "https://docs.google.com/document/d/13BoCNRdZbyUEWA03VofM-HHmzFU2d3qLv4z6zxmBxDA/edit?tab=t.0", "description": "Κανονισμοί και αρμοδιότητες της Δημοτικής Αστυνομίας.", "roles": [ { "title": "Υπεύθυνος Δημοτικής Αστυνομίας", "roleId": "1496377772623265943" }, { "title": "Βοηθός Υπευθύνου Δ.Α", "roleId": "1499813586686447666" } ] }, { "id": "oem", "emoji": "🚁", "name": "Ο.Ε.Μ", "fullName": "Ομάδα Εναέριων Μέσων", "url": "https://docs.google.com/document/d/1GKdAasi_DAMtrpgYvO_-iPsNJ_svLDWUN0CIBWZFzRA/edit?tab=t.0#heading=h.9yj944ber1q8", "description": "Κανονισμοί πτήσεων, επιχειρήσεων και χρήσης εναέριων μέσων.", "roles": [ { "title": "Εκπαιδευτές Ο.Ε.Μ", "roleId": "1300616669881827388" } ] } ]
+
+  {
+    "id": "od",
+    "emoji": "⚡",
+    "name": "Ο.Δ",
+    "fullName": "Ομάδα Δράσης",
+    "url": "-",
+    "description": "Καταστατικό, λειτουργία και διαδικασίες της Ομάδας Δράσης.",
+    "roles": [
+      { "title": "Υπεύθυνος Ο.Δ", "roleId": "1189271216079507586" },
+      { "title": "Βοηθός Υπευθύνου Ο.Δ", "roleId": "1189271324628103228" },
+      { "title": "Εκπαιδευτές Ο.Δ", "roleId": "-" }
+    ]
+  },
+  {
+    "id": "otel",
+    "emoji": "🚦",
+    "name": "Ο.Τ.ΕΛ",
+    "fullName": "Ομάδα Τροχονομικών Ελέγχων",
+    "url": "https://docs.google.com/document/d/1Y2L6LAWlyj-syn5IvJNd4FToW5_c3C5zY9YfTaWcdV0/edit?tab=t.0",
+    "description": "Κανονισμοί, έλεγχοι και διαδικασίες της Ομάδας Τροχονομικών Ελέγχων.",
+    "roles": [
+      { "title": "Υπεύθυνος Ο.Τ.ΕΛ", "roleId": "1370028187119124580" },
+      { "title": "Βοηθός Υπευθύνου Ο.Τ.ΕΛ", "roleId": "-" },
+      { "title": "Εκπαιδευτές Ο.Τ.ΕΛ", "roleId": "-" }
+    ]
+  },
+  {
+    "id": "odid",
+    "emoji": "🏍️",
+    "name": "Ο.ΔΙ.Δ",
+    "fullName": "Ομάδα Δίκυκλης Δράσης",
+    "url": "https://docs.google.com/document/d/1BSlMtSkBKi01zUxopW_dR3nmhHHNW2vKxU5UKnM_7vA/edit?tab=t.0",
+    "description": "Καταστατικό και επιχειρησιακοί κανόνες της Ομάδας Δίκυκλης Δράσης.",
+    "roles": [
+      { "title": "Υπεύθυνος Ο.ΔΙ.Δ", "roleId": "1192496338911375411" },
+      { "title": "Βοηθός Υπευθύνου Ο.ΔΙ.Δ", "roleId": "1216461966680260688" },
+      { "title": "Εκπαιδευτές Ο.ΔΙ.Δ", "roleId": "-" }
+    ]
+  },
+  {
+    "id": "odas",
+    "emoji": "🚔",
+    "name": "Ο.Δ.ΑΣ",
+    "fullName": "Ομάδα Δίτροχης Αστυνόμευσης",
+    "url": "https://docs.google.com/document/d/1vlJSgTlPYypNSG8kW0ExdrFw-yvPjR_NJILmUZWRhak/edit?tab=t.0",
+    "description": "Κανονισμοί, καθήκοντα και λειτουργία της Ομάδας Δίτροχης Αστυνόμευσης.",
+    "roles": [
+      { "title": "Υπεύθυνος Ο.Δ.ΑΣ", "roleId": "1189271007261904956" },
+      { "title": "Βοηθός Υπευθύνου Ο.Δ.ΑΣ", "roleId": "1189271116687081502" },
+      { "title": "Εκπαιδευτές Ο.Δ.ΑΣ", "roleId": "-" }
+    ]
+  },
+  {
+    "id": "academy",
+    "emoji": "🏛️",
+    "name": "Ακαδημία",
+    "fullName": "Ακαδημία HARMLORK",
+    "url": "https://docs.google.com/document/d/1ElX5BAZniUefRtM86owSKovcqrFsj8tSrvr8Nio5FiI/edit?tab=t.0#heading=h.8u3jhixqt65b",
+    "description": "Πρόγραμμα εκπαίδευσης, αξιολόγηση και εσωτερική λειτουργία της Ακαδημίας.",
+    "roles": [
+      { "title": "Υπεύθυνος Ακαδημίας", "roleId": "1252270509408780339" },
+      { "title": "Εκπαιδευτές Ακαδημίας", "roleId": "-" }
+    ]
+  },
+  {
+    "id": "da",
+    "emoji": "🏙️",
+    "name": "Δ.Α",
+    "fullName": "Δημοτική Αστυνομία",
+    "url": "https://docs.google.com/document/d/13BoCNRdZbyUEWA03VofM-HHmzFU2d3qLv4z6zxmBxDA/edit?tab=t.0",
+    "description": "Κανονισμοί και αρμοδιότητες της Δημοτικής Αστυνομίας.",
+    "roles": [
+      { "title": "Υπεύθυνος Δημοτικής Αστυνομίας", "roleId": "1496377772623265943" },
+      { "title": "Βοηθός Υπευθύνου Δ.Α", "roleId": "1499813586686447666" }
+    ]
+  },
+  {
+    "id": "oem",
+    "emoji": "🚁",
+    "name": "Ο.Ε.Μ",
+    "fullName": "Ομάδα Εναέριων Μέσων",
+    "url": "https://docs.google.com/document/d/1GKdAasi_DAMtrpgYvO_-iPsNJ_svLDWUN0CIBWZFzRA/edit?tab=t.0#heading=h.9yj944ber1q8",
+    "description": "Κανονισμοί πτήσεων, επιχειρήσεων και χρήσης εναέριων μέσων.",
+    "roles": [
+      { "title": "Εκπαιδευτές Ο.Ε.Μ", "roleId": "1300616669881827388" }
+    ]
+  }
+]
