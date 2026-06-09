@@ -12,7 +12,7 @@ const app = express();
 
 /* ---------------- WEB ---------------- */
 app.get("/", (req, res) => {
-  res.send("🚓 Harmlork Police System Online");
+  res.send("Harmlork Police System Online");
 });
 
 app.listen(process.env.PORT || 3000, () => {
@@ -48,58 +48,58 @@ function hexToNumber(hex) {
 }
 
 async function getRoleMentions(guild, roleId) {
-  if (!roleId || roleId === "-") return "➖";
+  if (!roleId || roleId === "-") return "—";
 
   const role = await guild.roles.fetch(roleId).catch(() => null);
-  if (!role) return "➖";
+  if (!role) return "—";
 
   await guild.members.fetch().catch(() => {});
 
   const members = role.members.map(m => `<@${m.id}>`);
 
-  return members.length ? members.join(" ") : "➖";
+  return members.length ? members.join(" ") : "—";
 }
 
-/* ---------------- EMBED UI ---------------- */
+/* ---------------- UI BUILDER (MDT SCREEN) ---------------- */
 
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("👮 HARMLORK POLICE • COMMAND CENTER")
-    .setDescription("```fix\nPOLICE MDT SYSTEM ACTIVE\n```")
-    .setThumbnail(config.logoUrl)
-    .setTimestamp();
+    .setTitle("👮 HARMLOK POLICE")
+    .setDescription(
+````ansi
+[1;36mSYSTEM STATUS: ONLINE[0m
+[1;37mDEPARTMENTS LOADED: ${services.length}[0m
+)
+.setThumbnail(config.logoUrl)
+.setTimestamp();
 
-  for (const service of services) {
-    let text = "";
+for (const service of services) {
+let block = "";
 
-    for (const r of service.roles || []) {
-      const mentions = await getRoleMentions(guild, r.roleId);
-      text += `👤 **${r.title}** ➜ ${mentions}\n`;
-    }
+for (const r of service.roles || []) {
+  const members = await getRoleMentions(guild, r.roleId);
+  block += `• ${r.title}: ${members}\n`;
+}
 
-    embed.addFields({
-      name: `${service.emoji} ${service.fullName}`,
-      value:
-`━━━━━━━━━━━━━━━━━━━━━━
-📄 Καταστατικό: ${
-        service.url && service.url !== "-"
-          ? `**[CLICK TO OPEN](${service.url})**`
-          : "➖"
-      }
+embed.addFields({
+  name: `◆ ${service.fullName}`,
+  value:
+ACCESS NODE: ${service.emoji}
+```
+📄 ${service.url && service.url !== "-" ? `[ΠΑΤΑ ΕΔΩ](${service.url})` : "NO FILE"}
 
-${text || "➖ Δεν υπάρχουν δεδομένα"}
+${block || "NO PERSONNEL ASSIGNED"}
 
-🟦 STATUS: ACTIVE UNIT
-━━━━━━━━━━━━━━━━━━━━━━`,
+────────────────────────`,
       inline: false
     });
   }
 
   embed.addFields({
-    name: "📌 QUICK UNITS",
+    name: "ΚΛΙΜΑΚΙΟ",
     value:
-`⚡ Ο.Δ   |   🚦 Ο.Τ.ΕΛ   |   🏍️ Ο.ΔΙ.Δ
+`⚡ Ο.Δ | 🚦 Ο.Τ.ΕΛ | 🏍️ Ο.ΔΙ.Δ
 🚔 Ο.Δ.ΑΣ | 🏛️ ΑΚΑΔΗΜΙΑ | 🏙️ Δ.Α | 🚁 Ο.Ε.Μ`,
     inline: false
   });
