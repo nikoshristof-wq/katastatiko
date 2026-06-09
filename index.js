@@ -84,11 +84,11 @@ async function buildPanelEmbed(guild) {
       name: `${service.emoji} ${service.fullName}`,
       value:
 `────────────────────
-📄 ${service.url && service.url !== "-" ? `[ΠΑΤΑ ΕΔΩR](${service.url})` : "NO FILE"}
+📄 ${service.url && service.url !== "-" ? `[ΠΑΤΑ ΕΔΩ](${service.url})` : "NO FILE"}
 
 ${block || "NO PERSONNEL"}
 
-STATUS: ACTIVE
+ΕΝΕΡΓΟ
 ────────────────────`,
       inline: false
     });
