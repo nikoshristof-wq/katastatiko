@@ -28,12 +28,12 @@ if (!TOKEN) {
   process.exit(1);
 }
 
-/* IMPORTANT INTENTS */
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers // 🔥 IMPORTANT FIX
   ]
 });
 
@@ -49,7 +49,7 @@ function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
-/* ---------------- SAFE ROLE FETCH (NO CRASH) ---------------- */
+/* ---------------- FIXED ROLE SYSTEM ---------------- */
 
 async function getRoleMentions(guild, roleId) {
   if (!roleId || roleId === "-") return "—";
@@ -57,19 +57,23 @@ async function getRoleMentions(guild, roleId) {
   const role = await guild.roles.fetch(roleId).catch(() => null);
   if (!role) return "—";
 
-  const members = role.members.map(m => `<@${m.id}>`);
+  // 🔥 FIX: σωστός τρόπος για να βρίσκει members
+  const members = guild.members.cache
+    .filter(m => m.roles.cache.has(roleId))
+    .map(m => `<@${m.id}>`);
+
   return members.length ? members.join(" ") : "—";
 }
 
-/* ---------------- MDT EMBED ---------------- */
+/* ---------------- EMBED ---------------- */
 
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("👮 HARMLORK POLICE ")
+    .setTitle("👮 HARMLORK POLICE SYSTEM")
     .setDescription(
 `ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ: ${services.length}
-MODE: ACTIVE`
+STATUS: ONLINE`
     )
     .setThumbnail(config.logoUrl)
     .setTimestamp();
@@ -79,18 +83,17 @@ MODE: ACTIVE`
 
     for (const r of service.roles || []) {
       const mentions = await getRoleMentions(guild, r.roleId);
-      block += `• ${r.title}: ${mentions}\n`;
+      block += `• **${r.title}** ➜ ${mentions}\n`;
     }
 
     embed.addFields({
       name: `${service.emoji} ${service.fullName}`,
       value:
 `────────────────────
-📄 ${service.url && service.url !== "-" ? `[ΠΑΤΑ ΕΔΩ](${service.url})` : "NO FILE"}
+📄 ${service.url && service.url !== "-" ? `[ΚΑΤΑΣΤΑΤΙΚΟ](${service.url})` : "NO FILE"}
 
-${block || "ΚΑΝΕΝΑΣ"}
+${block || "ΚΑΝΕΝΑ ΠΡΟΣΩΠΙΚΟ"}
 
-ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ
 ────────────────────`,
       inline: false
     });
@@ -119,7 +122,6 @@ client.on("messageCreate", async message => {
   if (message.author.bot) return;
   if (!message.guild) return;
 
-  // FLEXIBLE COMMAND (FIXED)
   if (!message.content.toLowerCase().startsWith("!katastatika")) return;
 
   try {
