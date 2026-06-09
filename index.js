@@ -5,7 +5,11 @@ const {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
+  StringSelectMenuBuilder,
+  SlashCommandBuilder,
+  REST,
+  Routes
 } = require("discord.js");
 
 const config = require("./config.json");
@@ -13,92 +17,103 @@ const services = require("./services.json");
 
 const app = express();
 
-/* ---------------- WEB SERVER ---------------- */
 app.get("/", (req, res) => {
-  res.send("🚓 Harmlork Police DataBase Online ✅");
+  res.send("ELAS Katastatika Bot is online ✅");
 });
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("🌐 Web server running.");
 });
 
-/* ---------------- BOT SETUP ---------------- */
-const TOKEN = process.env.TOKEN;
+const TOKEN = process.env.TOKEN || config.token;
+const CLIENT_ID = process.env.CLIENT_ID || config.clientId;
+const GUILD_ID = process.env.GUILD_ID || config.guildId;
 
-if (!TOKEN) {
-  console.error("❌ Missing TOKEN in environment variables.");
+if (!TOKEN || TOKEN === "ΒΑΛΕ_ΤΟ_TOKEN_ΣΟΥ") {
+  console.error("❌ Λείπει το TOKEN. Βάλτο στο config.json ή στα Render Environment Variables.");
+  process.exit(1);
+}
+
+if (!CLIENT_ID || CLIENT_ID === "ΒΑΛΕ_CLIENT_ID") {
+  console.error("❌ Λείπει το CLIENT_ID.");
+  process.exit(1);
+}
+
+if (!GUILD_ID || GUILD_ID === "ΒΑΛΕ_SERVER_ID") {
+  console.error("❌ Λείπει το GUILD_ID.");
   process.exit(1);
 }
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
 });
 
-/* ---------------- HELPERS ---------------- */
-
 function hexToNumber(hex) {
-  return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
+  return parseInt((hex || "#2563eb").replace("#", ""), 16);
 }
 
-function isEmptyRole(roleId) {
+function isPlaceholderRole(roleId) {
   return !roleId || roleId === "-" || roleId.startsWith("ROLE_ID_");
 }
 
-async function getRoleMembers(guild, roleId) {
-  if (isEmptyRole(roleId)) return null;
+async function getMembersByRole(guild, roleId) {
+  if (isPlaceholderRole(roleId)) return "`Δεν έχει οριστεί.`";
 
   const role = guild.roles.cache.get(roleId);
-  if (!role) return "`Role not found`";
+  if (!role) return "`Δεν βρέθηκε ο ρόλος.`";
 
-  const members = role.members.map(m => `• <@${m.id}>`);
-  return members.length ? members.join("\n") : "`No members`";
+  await guild.members.fetch();
+
+  const members = role.members.map(member => `<@${member.id}>`);
+  return members.length ? members.join(" ") : "`Κανένα μέλος.`";
 }
 
-async function buildServiceText(guild, service) {
+async function buildStaffText(guild, service) {
   const lines = [];
 
   for (const group of service.roles || []) {
-    const members = await getRoleMembers(guild, group.roleId);
-    if (!members) continue;
-
-    lines.push(`➜ **${group.title}**\n${members}`);
+    const members = await getMembersByRole(guild, group.roleId);
+    lines.push(`**${group.title}:**\n${members}`);
   }
 
-  if (!lines.length) {
-    lines.push("➜ **No staff assigned**");
-  }
-
-  return lines.join("\n\n");
+  return lines.join("\n\n") || "`Δεν υπάρχουν ρόλοι.`";
 }
 
-/* ---------------- EMBED ---------------- */
+function splitTextToFields(text, maxLength = 1024) {
+  if (text.length <= maxLength) return [text];
 
-async function buildPanelEmbed(guild) {
+  const chunks = [];
+  let current = "";
+
+  for (const part of text.split("\n\n")) {
+    if ((current + "\n\n" + part).length > maxLength) {
+      if (current) chunks.push(current);
+      current = part;
+    } else {
+      current = current ? `${current}\n\n${part}` : part;
+    }
+  }
+
+  if (current) chunks.push(current);
+  return chunks;
+}
+
+async function buildMainEmbed() {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("🚓 HARMLOK POLICE | STAFF DATABASE")
+    .setTitle("📋 ΚΑΤΑΣΤΑΤΙΚΑ ΥΠΗΡΕΣΙΩΝ")
     .setDescription(
-      "━━━━━━━━━━━━━━━━━━\n📋 **STAFF CONTROL PANEL**\n━━━━━━━━━━━━━━━━━━\n\n**Επίλεξε μια υπηρεσία από τα buttons παρακάτω**"
+      "**Επίλεξε υπηρεσία από το μενού για πλήρη προβολή.**\n\n" +
+      "Το panel εμφανίζει αυτόματα **Υπεύθυνους**, **Βοηθούς** και **Εκπαιδευτές** ανάλογα με τα roles."
     )
     .setThumbnail(config.logoUrl)
-    .setImage(config.bannerUrl || null)
-    .setFooter({
-      text: "Harmlork Police • Dynamic Staff System",
-      iconURL: config.logoUrl
-    })
+    .setFooter({ text: "HARMLORK POLICE" })
     .setTimestamp();
 
   for (const service of services) {
-    const staffText = await buildServiceText(guild, service);
-
     embed.addFields({
-      name: `${service.emoji || "📌"} ${service.fullName}`,
-      value: staffText,
+      name: `${service.emoji} ${service.name} — ${service.fullName}`,
+      value: `> ${service.description}`,
       inline: false
     });
   }
@@ -106,96 +121,138 @@ async function buildPanelEmbed(guild) {
   return embed;
 }
 
-/* ---------------- BUTTONS (DASHBOARD STYLE) ---------------- */
-
-function buildButtonRows() {
-  const rows = [];
-  let row = new ActionRowBuilder();
-
-  services.forEach((service, index) => {
-    const button = new ButtonBuilder()
-      .setLabel(service.name.toUpperCase())
-      .setStyle(ButtonStyle.Primary)
-      .setEmoji(service.emoji || "📌")
-      .setCustomId(`service_${index}`);
-
-    row.addComponents(button);
-
-    if (row.components.length === 5 || index === services.length - 1) {
-      rows.push(row);
-      row = new ActionRowBuilder();
-    }
-  });
-
-  return rows;
-}
-
-/* ---------------- READY ---------------- */
-
-client.once("ready", () => {
-  console.log(`✅ Logged in as ${client.user.tag}`);
-});
-
-/* ---------------- MESSAGE COMMAND ---------------- */
-
-client.on("messageCreate", async message => {
-  if (message.author.bot) return;
-  if (!message.guild) return;
-
-  const command = config.command || "!katastatika";
-
-  if (message.content.trim().toLowerCase() !== command.toLowerCase()) return;
-
-  try {
-    await message.delete().catch(() => {});
-
-    const embed = await buildPanelEmbed(message.guild);
-    const rows = buildButtonRows();
-
-    await message.channel.send({
-      embeds: [embed],
-      components: rows
-    });
-  } catch (error) {
-    console.error("PANEL ERROR:", error);
-
-    message.channel.send("❌ Error loading panel.");
-  }
-});
-
-/* ---------------- INTERACTIONS ---------------- */
-
-client.on("interactionCreate", async interaction => {
-  if (!interaction.isButton()) return;
-
-  const index = parseInt(interaction.customId.split("_")[1]);
-  const service = services[index];
-
-  if (!service) {
-    return interaction.reply({
-      content: "❌ Service not found.",
-      ephemeral: true
-    });
-  }
-
-  const text = await buildServiceText(interaction.guild, service);
+async function buildServiceEmbed(guild, service) {
+  const staffText = await buildStaffText(guild, service);
+  const staffChunks = splitTextToFields(staffText);
 
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle(`${service.emoji || "📌"} ${service.fullName}`)
-    .setDescription("📋 **Current Staff List**")
-    .addFields({
-      name: "👮 Team Members",
-      value: text || "`No members`"
-    })
+    .setTitle(`${service.emoji} ${service.name} — ${service.fullName}`)
+    .setDescription(`**${service.description}**`)
+    .setThumbnail(config.logoUrl)
+    .setFooter({ text: `${service.name} • ` })
     .setTimestamp();
 
-  await interaction.reply({
-    embeds: [embed],
-    ephemeral: true
+  staffChunks.forEach((chunk, index) => {
+    embed.addFields({
+      name: index === 0 ? "👥 Στελέχωση Υπηρεσίας" : "👥 Στελέχωση Υπηρεσίας συνέχεια",
+      value: chunk,
+      inline: false
+    });
   });
+
+  embed.addFields({
+    name: "📖 Καταστατικό",
+    value: `[Άνοιγμα καταστατικού](${service.url})`,
+    inline: false
+  });
+
+  return embed;
+}
+
+function buildMenu() {
+  return new ActionRowBuilder().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId("katastatika_menu")
+      .setPlaceholder("📌 Επίλεξε υπηρεσία")
+      .addOptions(
+        services.map(service => ({
+          label: `${service.name} - ${service.fullName}`.slice(0, 100),
+          description: service.description.slice(0, 100),
+          value: service.id,
+          emoji: service.emoji
+        }))
+      )
+  );
+}
+
+function buildButtons(service) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setLabel("📖 ΚΑΤΑΣΤΑΤΙΚΟ")
+      .setStyle(ButtonStyle.Link)
+      .setURL(service.url),
+
+    new ButtonBuilder()
+      .setCustomId("back_to_katastatika")
+      .setLabel("⬅️ Πίσω")
+      .setStyle(ButtonStyle.Secondary)
+  );
+}
+
+async function registerCommands() {
+  const commands = [
+    new SlashCommandBuilder()
+      .setName("katastatika")
+      .setDescription("Εμφανίζει το panel με τα καταστατικά υπηρεσιών.")
+      .toJSON()
+  ];
+
+  const rest = new REST({ version: "10" }).setToken(TOKEN);
+
+  await rest.put(
+    Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+    { body: commands }
+  );
+}
+
+client.once("ready", async () => {
+  console.log(`✅ Συνδέθηκε ως ${client.user.tag}`);
+  await registerCommands();
+  console.log("✅ Το /katastatika έγινε register.");
 });
 
-/* ---------------- LOGIN ---------------- */
+client.on("interactionCreate", async interaction => {
+  try {
+    if (interaction.isChatInputCommand()) {
+      if (interaction.commandName !== "katastatika") return;
+
+      const embed = await buildMainEmbed();
+
+      await interaction.reply({
+        embeds: [embed],
+        components: [buildMenu()]
+      });
+    }
+
+    if (interaction.isStringSelectMenu()) {
+      if (interaction.customId !== "katastatika_menu") return;
+
+      const service = services.find(item => item.id === interaction.values[0]);
+      if (!service) return;
+
+      const embed = await buildServiceEmbed(interaction.guild, service);
+
+      await interaction.update({
+        embeds: [embed],
+        components: [buildMenu(), buildButtons(service)]
+      });
+    }
+
+    if (interaction.isButton()) {
+      if (interaction.customId !== "back_to_katastatika") return;
+
+      const embed = await buildMainEmbed();
+
+      await interaction.update({
+        embeds: [embed],
+        components: [buildMenu()]
+      });
+    }
+  } catch (error) {
+    console.error(error);
+
+    const payload = {
+      content: "❌ Κάτι πήγε λάθος. Έλεγξε τα role IDs, τα links και τα permissions του bot.",
+      ephemeral: true
+    };
+
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp(payload);
+    } else {
+      await interaction.reply(payload);
+    }
+  }
+});
 
 client.login(TOKEN);
