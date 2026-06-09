@@ -67,8 +67,7 @@ async function buildPanelEmbed(guild) {
     .setColor(hexToNumber(config.embedColor))
     .setTitle("👮 HARMLORK POLICE ")
     .setDescription(
-`ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ
--: ${services.length}`
+`ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ: ${services.length}`
     )
     .setThumbnail(config.logoUrl)
     .setTimestamp();
