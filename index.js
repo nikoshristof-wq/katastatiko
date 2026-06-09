@@ -13,18 +13,20 @@ const services = require("./services.json");
 
 const app = express();
 
+/* ---------------- WEB SERVER ---------------- */
 app.get("/", (req, res) => {
-  res.send("Harmlork Police DataBase Online ✅");
+  res.send("🚓 Harmlork Police DataBase Online ✅");
 });
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("🌐 Web server running.");
 });
 
+/* ---------------- BOT SETUP ---------------- */
 const TOKEN = process.env.TOKEN;
 
 if (!TOKEN) {
-  console.error("❌ Λείπει το TOKEN από Render Environment Variables.");
+  console.error("❌ Missing TOKEN in environment variables.");
   process.exit(1);
 }
 
@@ -37,8 +39,10 @@ const client = new Client({
   ]
 });
 
+/* ---------------- HELPERS ---------------- */
+
 function hexToNumber(hex) {
-  return parseInt((hex || "#2563eb").replace("#", ""), 16);
+  return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
 function isEmptyRole(roleId) {
@@ -49,10 +53,10 @@ async function getRoleMembers(guild, roleId) {
   if (isEmptyRole(roleId)) return null;
 
   const role = guild.roles.cache.get(roleId);
-  if (!role) return "`Δεν βρέθηκε ο ρόλος.`";
+  if (!role) return "`Role not found`";
 
-  const members = role.members.map(member => `<@${member.id}>`);
-  return members.length ? members.join(", ") : "`Κανένα μέλος.`";
+  const members = role.members.map(m => `• <@${m.id}>`);
+  return members.length ? members.join("\n") : "`No members`";
 }
 
 async function buildServiceText(guild, service) {
@@ -62,29 +66,38 @@ async function buildServiceText(guild, service) {
     const members = await getRoleMembers(guild, group.roleId);
     if (!members) continue;
 
-    lines.push(`**${group.title}:** ${members}`);
+    lines.push(`➜ **${group.title}**\n${members}`);
   }
 
   if (!lines.length) {
-    lines.push("**Υπεύθυνοι:** `Δεν έχει οριστεί.`");
+    lines.push("➜ **No staff assigned**");
   }
 
-  return lines.join("\n");
+  return lines.join("\n\n");
 }
+
+/* ---------------- EMBED ---------------- */
 
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("📋 ΚΑΤΑΣΤΑΤΙΚΑ")
-    .setDescription("**Επιλέξτε μία υπηρεσία για να δείτε το καταστατικό της**")
+    .setTitle("🚓 HARMLOK POLICE | STAFF DATABASE")
+    .setDescription(
+      "━━━━━━━━━━━━━━━━━━\n📋 **STAFF CONTROL PANEL**\n━━━━━━━━━━━━━━━━━━\n\n**Επίλεξε μια υπηρεσία από τα buttons παρακάτω**"
+    )
     .setThumbnail(config.logoUrl)
-    .setFooter({ text: "Harmlork Police DataBase • Dynamic Staff System" });
+    .setImage(config.bannerUrl || null)
+    .setFooter({
+      text: "Harmlork Police • Dynamic Staff System",
+      iconURL: config.logoUrl
+    })
+    .setTimestamp();
 
   for (const service of services) {
     const staffText = await buildServiceText(guild, service);
 
     embed.addFields({
-      name: `${service.emoji || ""} ${service.fullName}`,
+      name: `${service.emoji || "📌"} ${service.fullName}`,
       value: staffText,
       inline: false
     });
@@ -93,38 +106,43 @@ async function buildPanelEmbed(guild) {
   return embed;
 }
 
+/* ---------------- BUTTONS (DASHBOARD STYLE) ---------------- */
+
 function buildButtonRows() {
   const rows = [];
-  let currentRow = new ActionRowBuilder();
+  let row = new ActionRowBuilder();
 
   services.forEach((service, index) => {
     const button = new ButtonBuilder()
-      .setLabel(`${service.name} ΚΑΤΑΣΤΑΤΙΚΟ`)
-      .setStyle(ButtonStyle.Link)
-      .setURL(service.url);
+      .setLabel(service.name.toUpperCase())
+      .setStyle(ButtonStyle.Primary)
+      .setEmoji(service.emoji || "📌")
+      .setCustomId(`service_${index}`);
 
-    currentRow.addComponents(button);
+    row.addComponents(button);
 
-    if (currentRow.components.length === 5 || index === services.length - 1) {
-      rows.push(currentRow);
-      currentRow = new ActionRowBuilder();
+    if (row.components.length === 5 || index === services.length - 1) {
+      rows.push(row);
+      row = new ActionRowBuilder();
     }
   });
 
   return rows;
 }
 
+/* ---------------- READY ---------------- */
+
 client.once("ready", () => {
-  console.log(`✅ Συνδέθηκε ως ${client.user.tag}`);
+  console.log(`✅ Logged in as ${client.user.tag}`);
 });
+
+/* ---------------- MESSAGE COMMAND ---------------- */
 
 client.on("messageCreate", async message => {
   if (message.author.bot) return;
   if (!message.guild) return;
 
   const command = config.command || "!katastatika";
-
-  console.log("MESSAGE:", message.content);
 
   if (message.content.trim().toLowerCase() !== command.toLowerCase()) return;
 
@@ -141,10 +159,43 @@ client.on("messageCreate", async message => {
   } catch (error) {
     console.error("PANEL ERROR:", error);
 
-    await message.channel.send({
-      content: "❌ Κάτι πήγε λάθος. Δες τα Render logs για PANEL ERROR."
-    });
+    message.channel.send("❌ Error loading panel.");
   }
 });
+
+/* ---------------- INTERACTIONS ---------------- */
+
+client.on("interactionCreate", async interaction => {
+  if (!interaction.isButton()) return;
+
+  const index = parseInt(interaction.customId.split("_")[1]);
+  const service = services[index];
+
+  if (!service) {
+    return interaction.reply({
+      content: "❌ Service not found.",
+      ephemeral: true
+    });
+  }
+
+  const text = await buildServiceText(interaction.guild, service);
+
+  const embed = new EmbedBuilder()
+    .setColor(hexToNumber(config.embedColor))
+    .setTitle(`${service.emoji || "📌"} ${service.fullName}`)
+    .setDescription("📋 **Current Staff List**")
+    .addFields({
+      name: "👮 Team Members",
+      value: text || "`No members`"
+    })
+    .setTimestamp();
+
+  await interaction.reply({
+    embeds: [embed],
+    ephemeral: true
+  });
+});
+
+/* ---------------- LOGIN ---------------- */
 
 client.login(TOKEN);
