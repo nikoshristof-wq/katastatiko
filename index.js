@@ -49,7 +49,7 @@ function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
-/* ---------------- ROLE FETCH (SAFE + CLEAN UI) ---------------- */
+/* ---------------- ROLE MEMBERS (CLICKABLE MENTIONS FIX) ---------------- */
 
 async function getRoleMentions(guild, roleId) {
   if (!roleId || roleId === "-") return "—";
@@ -57,18 +57,18 @@ async function getRoleMentions(guild, roleId) {
   const role = await guild.roles.fetch(roleId).catch(() => null);
   if (!role) return "—";
 
-  // 🔥 ensure members are loaded
+  // 🔥 IMPORTANT: ensure members exist
   await guild.members.fetch().catch(() => {});
 
   const members = role.members.map(m => {
-    // ✔ CLEAN DISPLAY (NO BROKEN MENTIONS)
-    return `• ${m.user.tag}`;
+    // ✔ REAL DISCORD CLICKABLE MENTION
+    return `• <@${m.id}>`;
   });
 
   return members.length ? members.join("\n") : "—";
 }
 
-/* ---------------- EMBED UI ---------------- */
+/* ---------------- EMBED ---------------- */
 
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
@@ -87,6 +87,7 @@ async function buildPanelEmbed(guild) {
 
     for (const r of service.roles || []) {
       const members = await getRoleMentions(guild, r.roleId);
+
       block += `👤 **${r.title}**\n${members}\n\n`;
     }
 
