@@ -33,7 +33,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers // 🔥 IMPORTANT FIX
+    GatewayIntentBits.GuildMembers // 🔥 REQUIRED
   ]
 });
 
@@ -57,10 +57,10 @@ async function getRoleMentions(guild, roleId) {
   const role = await guild.roles.fetch(roleId).catch(() => null);
   if (!role) return "—";
 
-  // 🔥 FIX: σωστός τρόπος για να βρίσκει members
-  const members = guild.members.cache
-    .filter(m => m.roles.cache.has(roleId))
-    .map(m => `<@${m.id}>`);
+  // 🔥 FULL FETCH (this fixes missing users)
+  await guild.members.fetch().catch(() => {});
+
+  const members = role.members.map(m => `<@${m.id}>`);
 
   return members.length ? members.join(" ") : "—";
 }
@@ -70,10 +70,11 @@ async function getRoleMentions(guild, roleId) {
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("👮 HARMLORK POLICE SYSTEM")
+    .setTitle("👮 HARMLORK POLICE ")
     .setDescription(
-`ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ: ${services.length}
-STATUS: ONLINE`
+`━━━━━━━━━━━━━━━━━━━━
+📁 ΚΛΙΜΑΚΙΑ: ${services.length}
+━━━━━━━━━━━━━━━━━━━━`
     )
     .setThumbnail(config.logoUrl)
     .setTimestamp();
@@ -83,24 +84,28 @@ STATUS: ONLINE`
 
     for (const r of service.roles || []) {
       const mentions = await getRoleMentions(guild, r.roleId);
-      block += `• **${r.title}** ➜ ${mentions}\n`;
+      block += `👤 **${r.title}** ➜ ${mentions}\n`;
     }
 
     embed.addFields({
       name: `${service.emoji} ${service.fullName}`,
       value:
-`────────────────────
-📄 ${service.url && service.url !== "-" ? `[ΚΑΤΑΣΤΑΤΙΚΟ](${service.url})` : "NO FILE"}
+`━━━━━━━━━━━━━━━━━━━━
+📄 Καταστατικό: ${
+        service.url && service.url !== "-"
+          ? `[ΠΑΤΑ ΕΔΩ](${service.url})`
+          : "ΔΕΝ ΥΠΑΡΧΕΙ"
+      }
 
 ${block || "ΚΑΝΕΝΑ ΠΡΟΣΩΠΙΚΟ"}
 
-────────────────────`,
+━━━━━━━━━━━━━━━━━━━━`,
       inline: false
     });
   }
 
   embed.addFields({
-    name: "ΚΛΙΜΑΚΙΑ",
+    name: "📌 ΚΛΙΜΑΚΙΑ",
     value:
 `⚡ Ο.Δ | 🚦 Ο.Τ.ΕΛ | 🏍️ Ο.ΔΙ.Δ
 🚔 Ο.Δ.ΑΣ | 🏛️ ΑΚΑΔΗΜΙΑ | 🏙️ Δ.Α | 🚁 Ο.Ε.Μ`,
