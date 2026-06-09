@@ -1,4 +1,5 @@
-{
+[
+  {
     "id": "od",
     "emoji": "⚡",
     "name": "Ο.Δ",
@@ -16,14 +17,14 @@
     "emoji": "🚦",
     "name": "Ο.Τ.ΕΛ",
     "fullName": "Ομάδα Τροχονομικών Ελέγχων",
-    "url": "https://docs.google.com/document/d/1Y2L6LAWlyj-syn5IvJNd4FToW5_c3C5zY9YfTaWcdV0/edit?tab=t.0",
-    "description": "Κανονισμοί, έλεγχοι και διαδικασίες της Ομάδας Τροχονομικών Ελέγχων.",
+    "url": "https://docs.google.com/document/d/1Y2L6LAWlyj-syn5IvJNd4FToW5_c3C5zY9YfTaWcdV0/edit",
+    "description": "Κανονισμοί και έλεγχοι.",
     "roles": [
       { "title": "Υπεύθυνος Ο.Τ.ΕΛ", "roleId": "1370028187119124580" },
-      { "title": "Βοηθός Υπευθύνου Ο.Τ.ΕΛ", "roleId": "-" },
-      { "title": "Εκπαιδευτές Ο.Τ.ΕΛ", "roleId": "-" }
+      { "title": "Βοηθός Ο.Τ.ΕΛ", "roleId": "-" }
     ]
-  },
+  }
+]
   {
     "id": "odid",
     "emoji": "🏍️",
