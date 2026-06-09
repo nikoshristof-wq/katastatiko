@@ -49,34 +49,28 @@ function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
-/* 🔥 FIXED ROLE MEMBERS (WORKS 100%) */
-async function getRoleMembers(guild, roleId) {
+/* ---------------- ROLE FETCH (FIXED + MENTIONS) ---------------- */
+
+async function getRoleMentions(guild, roleId) {
   if (!roleId || roleId === "-") return "➖";
 
   const role = await guild.roles.fetch(roleId).catch(() => null);
-  if (!role) return "Role not found";
+  if (!role) return "➖";
 
-  // force cache members (IMPORTANT FIX)
   await guild.members.fetch().catch(() => {});
 
-  const members = role.members.map(m => `@${m.user.username}`);
+  const members = role.members.map(m => `<@${m.id}>`);
 
-  return members.length ? members.join(" · ") : "➖";
+  return members.length ? members.join(" ") : "➖";
 }
 
-/* ---------------- EMBED ---------------- */
+/* ---------------- EMBED UI ---------------- */
 
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setDescription(
-`╔════════════════════════════════════════════╗
-            👮 HARMLORK POLICE
-             ΚΑΤΑΣΤΑΤΙΚΑ ΥΠΗΡΕΣΙΩΝ
-╚════════════════════════════════════════════╝
-
-📋 Επιλέξτε υπηρεσία με το !katastatika`
-    )
+    .setTitle("👮 HARMLORK POLICE • MDT SYSTEM")
+    .setDescription("📋 Επιλέξτε υπηρεσία με το !katastatika")
     .setThumbnail(config.logoUrl)
     .setTimestamp();
 
@@ -84,19 +78,23 @@ async function buildPanelEmbed(guild) {
     let text = "";
 
     for (const r of service.roles || []) {
-      const members = await getRoleMembers(guild, r.roleId);
+      const mentions = await getRoleMentions(guild, r.roleId);
 
-      text += `👤 **${r.title}** ➜ ${members}\n`;
+      text += `👤 **${r.title}** ➜ ${mentions}\n`;
     }
 
     embed.addFields({
       name: `${service.emoji} ${service.fullName}`,
       value:
-`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔗 Καταστατικό: ${service.url && service.url !== "-" ? `[Άνοιγμα](${service.url})` : "➖"}
+`━━━━━━━━━━━━━━━━━━━━━━
+🔗 Καταστατικό: ${
+        service.url && service.url !== "-"
+          ? `[Άνοιγμα](${service.url})`
+          : "➖"
+      }
 
-${text || "➖ Δεν υπάρχουν δεδομένα"}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+${text || "➖"}
+━━━━━━━━━━━━━━━━━━━━━━`,
       inline: false
     });
   }
