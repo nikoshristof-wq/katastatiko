@@ -12,7 +12,7 @@ const app = express();
 
 /* ---------------- WEB ---------------- */
 app.get("/", (req, res) => {
-  res.send("Harmlork Police System Online");
+  res.send("Harmlork Police");
 });
 
 app.listen(process.env.PORT || 3000, () => {
@@ -31,15 +31,16 @@ if (!TOKEN) {
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
   ]
 });
 
-process.on("unhandledRejection", err => {
-  console.log("ERROR:", err);
-});
+/* ---------------- ERROR HANDLING (IMPORTANT) ---------------- */
+
+process.on("unhandledRejection", console.error);
+client.on("error", console.error);
+client.on("shardError", console.error);
 
 /* ---------------- HELPERS ---------------- */
 
@@ -47,27 +48,27 @@ function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
 
+/* ---------------- SAFE ROLE DISPLAY (NO FETCH CRASH) ---------------- */
+
 async function getRoleMentions(guild, roleId) {
   if (!roleId || roleId === "-") return "—";
 
   const role = await guild.roles.fetch(roleId).catch(() => null);
   if (!role) return "—";
 
-  await guild.members.fetch().catch(() => {});
-
   const members = role.members.map(m => `<@${m.id}>`);
-
   return members.length ? members.join(" ") : "—";
 }
 
-/* ---------------- EMBED (SAFE MDT UI) ---------------- */
+/* ---------------- EMBED UI (MDT STYLE CLEAN) ---------------- */
 
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("👮 HARMLORK POLICE ")
+    .setTitle("")
     .setDescription(
-`ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ: ${services.length}`
+`ΕΝΕΡΓΑ ΚΛΙΜΑΚΙΑ: ${services.length}
+MODE: MDT ACTIVE`
     )
     .setThumbnail(config.logoUrl)
     .setTimestamp();
@@ -76,8 +77,8 @@ async function buildPanelEmbed(guild) {
     let block = "";
 
     for (const r of service.roles || []) {
-      const members = await getRoleMentions(guild, r.roleId);
-      block += `• ${r.title}: ${members}\n`;
+      const mentions = await getRoleMentions(guild, r.roleId);
+      block += `• ${r.title}: ${mentions}\n`;
     }
 
     embed.addFields({
@@ -86,16 +87,16 @@ async function buildPanelEmbed(guild) {
 `────────────────────
 📄 ${service.url && service.url !== "-" ? `[ΠΑΤΑ ΕΔΩ](${service.url})` : "NO FILE"}
 
-${block || "NO PERSONNEL"}
+${block || "NO PERSONNEL ASSIGNED"}
 
-ΕΝΕΡΓΟ
+STATUS: ACTIVE UNIT
 ────────────────────`,
       inline: false
     });
   }
 
   embed.addFields({
-    name: "ΚΛΙΜΑΚΙΟ",
+    name: "SYSTEM UNITS",
     value:
 `⚡ Ο.Δ | 🚦 Ο.Τ.ΕΛ | 🏍️ Ο.ΔΙ.Δ
 🚔 Ο.Δ.ΑΣ | 🏛️ ΑΚΑΔΗΜΙΑ | 🏙️ Δ.Α | 🚁 Ο.Ε.Μ`,
@@ -119,9 +120,13 @@ client.on("messageCreate", async message => {
 
   if (message.content.toLowerCase() !== "!katastatika") return;
 
-  const embed = await buildPanelEmbed(message.guild);
-
-  await message.channel.send({ embeds: [embed] });
+  try {
+    const embed = await buildPanelEmbed(message.guild);
+    await message.channel.send({ embeds: [embed] });
+  } catch (err) {
+    console.error("PANEL ERROR:", err);
+    message.channel.send("❌ Error loading panel.");
+  }
 });
 
 /* ---------------- LOGIN ---------------- */
