@@ -37,8 +37,6 @@ const client = new Client({
   ]
 });
 
-/* ---------------- SAFETY ---------------- */
-
 process.on("unhandledRejection", err => {
   console.log("ERROR:", err);
 });
@@ -48,8 +46,6 @@ process.on("unhandledRejection", err => {
 function hexToNumber(hex) {
   return parseInt((hex || "#1e3a8a").replace("#", ""), 16);
 }
-
-/* ---------------- ROLE FETCH (FIXED + MENTIONS) ---------------- */
 
 async function getRoleMentions(guild, roleId) {
   if (!roleId || roleId === "-") return "➖";
@@ -69,8 +65,8 @@ async function getRoleMentions(guild, roleId) {
 async function buildPanelEmbed(guild) {
   const embed = new EmbedBuilder()
     .setColor(hexToNumber(config.embedColor))
-    .setTitle("👮 HARMLORK POLICE • MDT SYSTEM")
-    .setDescription("📋 Επιλέξτε υπηρεσία με το !katastatika")
+    .setTitle("👮 HARMLORK POLICE • COMMAND CENTER")
+    .setDescription("```fix\nPOLICE MDT SYSTEM ACTIVE\n```")
     .setThumbnail(config.logoUrl)
     .setTimestamp();
 
@@ -79,7 +75,6 @@ async function buildPanelEmbed(guild) {
 
     for (const r of service.roles || []) {
       const mentions = await getRoleMentions(guild, r.roleId);
-
       text += `👤 **${r.title}** ➜ ${mentions}\n`;
     }
 
@@ -87,17 +82,27 @@ async function buildPanelEmbed(guild) {
       name: `${service.emoji} ${service.fullName}`,
       value:
 `━━━━━━━━━━━━━━━━━━━━━━
-🔗 Καταστατικό: ${
+📄 Καταστατικό: ${
         service.url && service.url !== "-"
-          ? `[Άνοιγμα](${service.url})`
+          ? `**[CLICK TO OPEN](${service.url})**`
           : "➖"
       }
 
-${text || "➖"}
+${text || "➖ Δεν υπάρχουν δεδομένα"}
+
+🟦 STATUS: ACTIVE UNIT
 ━━━━━━━━━━━━━━━━━━━━━━`,
       inline: false
     });
   }
+
+  embed.addFields({
+    name: "📌 QUICK UNITS",
+    value:
+`⚡ Ο.Δ   |   🚦 Ο.Τ.ΕΛ   |   🏍️ Ο.ΔΙ.Δ
+🚔 Ο.Δ.ΑΣ | 🏛️ ΑΚΑΔΗΜΙΑ | 🏙️ Δ.Α | 🚁 Ο.Ε.Μ`,
+    inline: false
+  });
 
   return embed;
 }
